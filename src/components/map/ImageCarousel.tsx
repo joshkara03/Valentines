@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,8 +10,15 @@ interface ImageCarouselProps {
 export function ImageCarousel({ images, title }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
+  const [loadedImages, setLoadedImages] = useState<Record<string, boolean>>({});
 
   const validImages = images.filter(Boolean);
+
+  // Reset index when images change
+  useEffect(() => {
+    setCurrentIndex(0);
+    setLoadedImages({});
+  }, [images]);
 
   if (validImages.length === 0) return null;
 
@@ -49,10 +56,8 @@ export function ImageCarousel({ images, title }: ImageCarouselProps) {
   return (
     <div className="relative w-full aspect-[16/10] rounded-xl overflow-hidden bg-amber-100/50">
       <AnimatePresence initial={false} custom={direction} mode="popLayout">
-        <motion.img
-          key={currentIndex}
-          src={validImages[currentIndex]}
-          alt={`${title} - Photo ${currentIndex + 1}`}
+        <motion.div
+          key={`${currentIndex}-${validImages[currentIndex]}`}
           custom={direction}
           variants={variants}
           initial="enter"
@@ -62,11 +67,32 @@ export function ImageCarousel({ images, title }: ImageCarouselProps) {
             x: { type: "spring", stiffness: 300, damping: 30 },
             opacity: { duration: 0.2 },
           }}
-          className="absolute inset-0 w-full h-full object-cover"
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = "none";
-          }}
-        />
+          className="absolute inset-0 w-full h-full"
+        >
+          <img
+            src={validImages[currentIndex]}
+            alt={`${title} - Photo ${currentIndex + 1}`}
+            className="w-full h-full object-cover"
+            onLoad={() => {
+              setLoadedImages((prev) => ({
+                ...prev,
+                [validImages[currentIndex]]: true,
+              }));
+            }}
+            onError={(e) => {
+              // Try with a cache-busting query param as fallback
+              const img = e.target as HTMLImageElement;
+              if (!img.src.includes("?")) {
+                img.src = `${validImages[currentIndex]}?t=${Date.now()}`;
+              }
+            }}
+          />
+          {!loadedImages[validImages[currentIndex]] && (
+            <div className="absolute inset-0 flex items-center justify-center bg-amber-100/50">
+              <div className="w-8 h-8 border-2 border-amber-400/50 border-t-amber-600 rounded-full animate-spin" />
+            </div>
+          )}
+        </motion.div>
       </AnimatePresence>
 
       {/* Navigation arrows */}

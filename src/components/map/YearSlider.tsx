@@ -31,10 +31,10 @@ export function YearSlider({
       className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[500] w-[90%] max-w-[600px]"
     >
       <div
-        className="flex flex-col gap-2 px-6 py-4 rounded-2xl bg-white/50 backdrop-blur-xl border border-white/50"
+        className="flex flex-col gap-2 px-6 py-4 rounded-2xl bg-amber-950/10 backdrop-blur-xl border border-amber-900/10"
         style={{
           boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 24px rgba(139,109,71,0.08)",
+            "inset 0 1px 0 rgba(255,255,255,0.3), 0 4px 24px rgba(139,109,71,0.15)",
         }}
       >
         {/* Label row */}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   MapContainer,
   TileLayer,
@@ -16,6 +16,7 @@ import { MemoryModal } from "./MemoryModal";
 import { WelcomeOverlay } from "./WelcomeOverlay";
 import { FloatingHearts } from "./FloatingHearts";
 import { YearSlider } from "./YearSlider";
+import { LocationMenu } from "./LocationMenu";
 
 const MIN_YEAR = 2018;
 const MAX_YEAR = 2026;
@@ -46,7 +47,21 @@ const BOUNDS: L.LatLngBoundsExpression = [
 
 const CENTER: L.LatLngExpression = [52, -96]; // Center of Canada
 
-function MapController({ selectedMemory }: { selectedMemory: Memory | null }) {
+interface FlyToTarget {
+  lat: number;
+  lng: number;
+  zoom: number;
+}
+
+function MapController({
+  selectedMemory,
+  flyToTarget,
+  onFlyToComplete,
+}: {
+  selectedMemory: Memory | null;
+  flyToTarget: FlyToTarget | null;
+  onFlyToComplete: () => void;
+}) {
   const map = useMap();
 
   useEffect(() => {
@@ -58,6 +73,16 @@ function MapController({ selectedMemory }: { selectedMemory: Memory | null }) {
     }
   }, [selectedMemory, map]);
 
+  useEffect(() => {
+    if (flyToTarget) {
+      map.flyTo([flyToTarget.lat, flyToTarget.lng], flyToTarget.zoom, {
+        duration: 2,
+        easeLinearity: 0.1,
+      });
+      onFlyToComplete();
+    }
+  }, [flyToTarget, map, onFlyToComplete]);
+
   return null;
 }
 
@@ -67,6 +92,15 @@ export function MemoryMap() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [selectedYear, setSelectedYear] = useState(MAX_YEAR);
+  const [flyToTarget, setFlyToTarget] = useState<FlyToTarget | null>(null);
+
+  const handleFlyToComplete = useCallback(() => {
+    setFlyToTarget(null);
+  }, []);
+
+  const handleZoomToCity = useCallback((lat: number, lng: number, zoom: number) => {
+    setFlyToTarget({ lat, lng, zoom });
+  }, []);
 
   const filteredMemories = memories.filter((memory) => {
     const year = getYearFromDate(memory.date);
@@ -94,7 +128,7 @@ export function MemoryMap() {
       {/* Custom CSS overrides for Leaflet warm theme */}
       <style>{`
         .leaflet-container {
-          background: #f5f0e8 !important;
+          background: #e8e0d0 !important;
           font-family: 'Cormorant Garamond', Georgia, serif;
         }
         .leaflet-control-zoom {
@@ -159,7 +193,7 @@ export function MemoryMap() {
           filter: drop-shadow(0 4px 12px rgba(185, 50, 50, 0.5)) brightness(1.05);
         }
         .leaflet-tile-pane {
-          filter: saturate(0.4) sepia(0.25) brightness(1.05) contrast(0.95) !important;
+          filter: none !important;
         }
         .leaflet-zoom-anim .leaflet-zoom-animated {
           transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) !important;
@@ -200,7 +234,7 @@ export function MemoryMap() {
         className="absolute top-0 left-0 right-0 z-[500] pointer-events-none"
       >
         <div className="flex items-center justify-center gap-3 py-4">
-          <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-white/40 backdrop-blur-xl border border-white/50 shadow-lg shadow-amber-900/5" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 24px rgba(139,109,71,0.08)' }}>
+          <div className="flex items-center gap-2.5 px-6 py-2.5 rounded-full bg-amber-950/10 backdrop-blur-xl border border-amber-900/10 shadow-lg shadow-amber-900/5" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), 0 4px 24px rgba(139,109,71,0.15)' }}>
             <Heart className="w-4 h-4 text-red-500 fill-red-500" />
             <span className="text-amber-900/80 text-sm font-medium tracking-wide" style={{ fontFamily: "'Cormorant', serif" }}>
               Our Memory Map
@@ -230,11 +264,16 @@ export function MemoryMap() {
           whenReady={() => setMapReady(true)}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
           />
 
-          <MapController selectedMemory={isModalOpen ? selectedMemory : null} />
+          <MapController
+            selectedMemory={isModalOpen ? selectedMemory : null}
+            flyToTarget={flyToTarget}
+            onFlyToComplete={handleFlyToComplete}
+          />
 
           {filteredMemories.map((memory) => (
             <Marker
@@ -266,9 +305,9 @@ export function MemoryMap() {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: showWelcome ? 0 : 1, x: showWelcome ? -20 : 0 }}
         transition={{ delay: 0.8 }}
-        className="absolute bottom-24 left-6 z-[500] pointer-events-none"
+        className="absolute bottom-28 left-6 z-[500] pointer-events-none"
       >
-        <div className="flex flex-col gap-1.5 px-4 py-3 rounded-2xl bg-white/40 backdrop-blur-xl border border-white/50" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6), 0 4px 24px rgba(139,109,71,0.08)' }}>
+        <div className="flex flex-col gap-1.5 px-4 py-3 rounded-2xl bg-amber-950/10 backdrop-blur-xl border border-amber-900/10" style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3), 0 4px 24px rgba(139,109,71,0.15)' }}>
           <span className="text-amber-800/50 text-xs uppercase tracking-wider" style={{ fontFamily: "'Cormorant', serif" }}>
             Memories
           </span>
@@ -286,12 +325,12 @@ export function MemoryMap() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: showWelcome ? 0 : 0.6, y: showWelcome ? 20 : 0 }}
         transition={{ delay: 1.2, duration: 0.5 }}
-        className="absolute bottom-24 right-6 z-[500] pointer-events-none"
+        className="absolute bottom-28 right-6 z-[500] pointer-events-none"
       >
         <motion.div
           animate={{ opacity: [0.6, 0.3, 0.6] }}
           transition={{ duration: 3, repeat: Infinity }}
-          className="px-4 py-2 rounded-full bg-white/40 backdrop-blur-xl border border-white/50 text-amber-800/40 text-xs" style={{ fontFamily: "'Cormorant Garamond', serif", boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.6)' }}
+          className="px-4 py-2 rounded-full bg-amber-950/10 backdrop-blur-xl border border-amber-900/10 text-amber-800/50 text-xs" style={{ fontFamily: "'Cormorant Garamond', serif", boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.3)' }}
         >
           Click a heart to open a memory 💗
         </motion.div>
@@ -305,6 +344,9 @@ export function MemoryMap() {
         onChange={setSelectedYear}
         visible={!showWelcome}
       />
+
+      {/* Location Menu */}
+      <LocationMenu onZoomTo={handleZoomToCity} visible={!showWelcome} />
 
       {/* Memory Modal */}
       <MemoryModal

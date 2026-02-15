@@ -42,7 +42,7 @@ export function MemoryModal({ memory, isOpen, onClose }: MemoryModalProps) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-amber-950/30 backdrop-blur-md z-[1000]"
+            className="fixed inset-0 bg-amber-950/40 backdrop-blur-md z-[1000]"
             onClick={onClose}
           />
 
@@ -59,12 +59,12 @@ export function MemoryModal({ memory, isOpen, onClose }: MemoryModalProps) {
             className="fixed inset-0 z-[1001] flex items-center justify-center p-4 pointer-events-none"
           >
             <div
-              className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto pointer-events-auto rounded-2xl border border-white/50 shadow-2xl"
+              className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto pointer-events-auto rounded-2xl border border-amber-200/30 shadow-2xl"
               style={{
-                background: 'rgba(255, 252, 245, 0.75)',
+                background: 'rgba(245, 240, 230, 0.85)',
                 backdropFilter: 'blur(24px) saturate(1.5)',
                 WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.7), 0 8px 40px rgba(139,109,71,0.12), 0 2px 8px rgba(139,109,71,0.08)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.5), 0 8px 40px rgba(139,109,71,0.18), 0 2px 8px rgba(139,109,71,0.1)',
               }}
               onClick={(e) => e.stopPropagation()}
             >

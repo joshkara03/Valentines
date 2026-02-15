@@ -36,7 +36,7 @@ export function WelcomeOverlay({ onEnter }: WelcomeOverlayProps) {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
           className="fixed inset-0 z-[2000] flex items-center justify-center"
-          style={{ background: 'linear-gradient(180deg, #f5f0e8 0%, #ede4d4 50%, #f5f0e8 100%)' }}
+          style={{ background: 'linear-gradient(180deg, #ede4d4 0%, #e0d5c0 50%, #ede4d4 100%)' }}
         >
           {/* Soft floating particles */}
           <div className="absolute inset-0 overflow-hidden">
